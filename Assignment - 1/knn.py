@@ -1,5 +1,5 @@
 """ knn.py -
-
+Implementation of K Nearest neighbors using Sklearn
 """
 import time
 import numpy
@@ -14,11 +14,11 @@ train_time_cv = 0
 test_time_cv = 0
 
 
-def knn_cv_eval(train_set, train_label, kne_cval):
+def knn_cv_eval(features, labels, kne_cval):
     """
     This function evaluates classifier performance when the model has been cross - validated
-    :param train_set: training set data
-    :param train_label: training set labels
+    :param features: training set data
+    :param labels: training set labels
     :param kne_cval: cross - validated model's instance
     :return: model instance after cross validation and hyperparameter training has been performed
     """
@@ -28,7 +28,7 @@ def knn_cv_eval(train_set, train_label, kne_cval):
         'p': [1, 2]
     }
     g_clf = GridSearchCV(kne_cval, hyperparameter_grid, cv=10, verbose=1)
-    g_clf.fit(train_set, train_label)
+    g_clf.fit(features, labels)
     if g_clf.best_params_['p'] == 1:
         print(
             "Power parameter comes out to be 1, which mean Manhattan distance is the best while calculating distances\n"
@@ -42,7 +42,7 @@ def knn_cv_eval(train_set, train_label, kne_cval):
 
 def knn_implementation(features, labels):
     """
-
+    This function performs K Nearest Neighbor classification
     :param features:
     :param labels:
     :return:
@@ -78,7 +78,7 @@ def knn_implementation(features, labels):
 
 def feature_label_extractor():
     """
-
+    Extracts features and labels from the data
     :return:
     """
     data_frame = numpy.genfromtxt("iris.data", delimiter=',', encoding="utf-8-sig", dtype="U")
@@ -89,7 +89,7 @@ def feature_label_extractor():
 
 def data_normalization(features):
     """
-
+    Normalize data to scale and take units out of equation
     :param features:
     :return:
     """
@@ -103,7 +103,7 @@ def data_normalization(features):
 
 def data_plot(features, labels):
     """
-
+    Plotting data to visualize
     :param features:
     :param labels:
     :return:
@@ -126,7 +126,7 @@ def data_plot(features, labels):
 
 def data_visualisation(features, labels):
     """
-
+    Setting up data in score space to help visualize
     :param features:
     :param labels:
     :return:

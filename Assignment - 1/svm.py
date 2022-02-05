@@ -14,6 +14,9 @@ test_time_cv_rbf = 0
 
 
 def svm_implementation(features, labels):
+    """
+    SVM Implementation for RBF Kernel and Linear Kernel
+    """
     clf_lin = SVC(kernel='linear', random_state=1)
 
     print("Cross validation for Linear Kernel begins.....")
@@ -80,7 +83,7 @@ def svm_implementation(features, labels):
 
 def feature_label_extractor():
     """
-
+    Extracts features and labels from the data
     :return:
     """
     data_frame = numpy.genfromtxt("iris.data", delimiter=',', encoding="utf-8-sig", dtype="U")
@@ -91,7 +94,7 @@ def feature_label_extractor():
 
 def data_normalization(features):
     """
-
+    Normalize data to scale and take units out of equation
     :param features:
     :return:
     """
@@ -105,7 +108,7 @@ def data_normalization(features):
 
 def data_plot(features, labels):
     """
-
+    Plotting data to visualize
     :param features:
     :param labels:
     :return:
@@ -128,7 +131,7 @@ def data_plot(features, labels):
 
 def data_visualisation(features, labels):
     """
-
+    Setting up data in score space to help visualize
     :param features:
     :param labels:
     :return:
