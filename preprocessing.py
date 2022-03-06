@@ -96,7 +96,7 @@ def notes_extraction_instrument(parts: music21.stream.iterator.StreamIterator):
         elif isinstance(itr, chord.Chord):
             for pi in itr.pitches:
                 c_note.append(max(0.0, pi.ps))
-                parent_note.append(itr)
+            parent_note.append(itr)
         else:
             pass
     return c_note, parent_note
@@ -179,11 +179,17 @@ def count_plots(p_mid: List[music21.stream.base.Score]):
     plt.ylabel('Note Counts')
     plt.show()
 
-# def perform_end_note_correction():
+def perform_end_note_correction(all_notes: List) -> None:
+    count = 0
+    for index, single_note in enumerate(all_notes):
+        if not single_note.volume.velocity or not single_note.duration.quarterLength:
+            all_notes.pop(index)
+    return
 
 
 parse_mid()
 temp, parent_n = all_notes = notes_extraction_mid(parsed_mid)
-plot_quarter_notes(parsed_mid)
-count_plots(parsed_mid)
+perform_end_note_correction(parent_n)
+# plot_quarter_notes(parsed_mid)
+# count_plots(parsed_mid)
 print((files_skipped/(len(parsed_mid) + files_skipped) * 100), "percent of files have been skipped due to corrupt data")
