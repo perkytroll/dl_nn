@@ -68,15 +68,16 @@ def notes_extraction_mid(p_mid: List[music21.stream.Score]):
             - Iterating over the notes of the given instrument
             """
             for itr in re_itr:
-                # If there are still some tie notes that were unresolved, ignore them
+                # If there are still some tie notes that were unresolved by tie.stripTie(), ignore them
                 if (isinstance(itr, note.Note) or isinstance(itr, chord.Chord)) and not itr.tie:
                     if isinstance(itr, note.Note):
                         c_note.append(max(0.0, itr.pitch.ps))
                         parent_note.append(itr)
                     elif isinstance(itr, chord.Chord):
-                        for pi in itr.pitches:
-                            c_note.append(max(0.0, pi.ps))
-                            parent_note.append(itr)
+                        for single_note in itr.notes:
+                            parent_note.append(single_note)
+                        for single_pitch in itr.pitches:
+                            c_note.append(max(0.0, single_pitch.ps))
                     else:
                         pass
     return c_note, parent_note
@@ -177,6 +178,8 @@ def count_plots(p_mid: List[music21.stream.base.Score]):
     plt.xlabel('Octaves')
     plt.ylabel('Note Counts')
     plt.show()
+
+# def perform_end_note_correction():
 
 
 parse_mid()
