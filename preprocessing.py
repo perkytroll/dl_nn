@@ -12,6 +12,7 @@ from music21.converter import ConverterFileException
 from music21.exceptions21 import StreamException
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
+import numpy as np
 
 """
 Create a list of mid files for data extraction
@@ -19,7 +20,6 @@ Create a list of mid files for data extraction
 mid_files_path: str = "./midi_songs/"
 parsed_mid: List[music21.stream.base.Score] = []
 files_skipped: int = 0
-
 
 def parse_mid():
     """
@@ -30,6 +30,11 @@ def parse_mid():
             # Use music21's converter which is used to parse music from all kinds of files
             # Parses the data as a stream
             mid_itr = converter.parse(mid_files_path + file_itr)
+
+            # If there are any tie notes, strip them and convert them into single notes with duration as the
+            # sum of the tied notes
+            mid_itr.stripTies(inPlace=True)
+
             parsed_mid.append(mid_itr)
         except StreamException:
             # Skip the file when it cannot be parsed to a stream
@@ -47,6 +52,9 @@ def notes_extraction_mid(p_mid: List[music21.stream.Score]):
     parent_note = []
     c_note = []
     for p_mid_itr in p_mid:
+        # If there are any tie notes, strip them and convert them into single notes with duration as the
+        # sum of the tied notes
+        p_mid_itr.stripTies(inPlace=True)
         """
         - Partition by instrument in the given mid files
         """
@@ -60,15 +68,17 @@ def notes_extraction_mid(p_mid: List[music21.stream.Score]):
             - Iterating over the notes of the given instrument
             """
             for itr in re_itr:
-                if isinstance(itr, note.Note):
-                    c_note.append(max(0.0, itr.pitch.ps))
-                    parent_note.append(itr)
-                elif isinstance(itr, chord.Chord):
-                    for pi in itr.pitches:
-                        c_note.append(max(0.0, pi.ps))
+                # If there are still some tie notes that were unresolved, ignore them
+                if (isinstance(itr, note.Note) or isinstance(itr, chord.Chord)) and not itr.tie:
+                    if isinstance(itr, note.Note):
+                        c_note.append(max(0.0, itr.pitch.ps))
                         parent_note.append(itr)
-                else:
-                    pass
+                    elif isinstance(itr, chord.Chord):
+                        for pi in itr.pitches:
+                            c_note.append(max(0.0, pi.ps))
+                            parent_note.append(itr)
+                    else:
+                        pass
     return c_note, parent_note
 
 
