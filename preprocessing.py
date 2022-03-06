@@ -13,7 +13,7 @@ from music21.exceptions21 import StreamException
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
 import numpy as np
-
+from tensorflow.keras.utils import to_categorical
 """
 Create a list of mid files for data extraction
 """
@@ -74,8 +74,7 @@ def notes_extraction_mid(p_mid: List[music21.stream.Score]):
                         c_note.append(max(0.0, itr.pitch.ps))
                         parent_note.append(itr)
                     elif isinstance(itr, chord.Chord):
-                        for single_note in itr.notes:
-                            parent_note.append(single_note)
+                        parent_note.append(itr)
                         for single_pitch in itr.pitches:
                             c_note.append(max(0.0, single_pitch.ps))
                     else:
@@ -186,10 +185,31 @@ def perform_end_note_correction(all_notes: List) -> None:
             all_notes.pop(index)
     return
 
+def perform_encoding(all_notes):
+    # get the string version of all the distinct notes and chords and store it in a set
+    notes_string = set()
+    for single_note_chord in all_notes:
+        if isinstance(single_note_chord, note.Note):
+            if single_note_chord.nameWithOctave:
+                notes_string.add(single_note_chord.nameWithOctave)
+        if isinstance(single_note_chord, chord.Chord):
+            notes_string.add(','.join(note.nameWithOctave for note in single_note_chord.notes))
+
+    # create a dictionary of integers corresponding to the distinct notes and chords
+    note_int_mapping = dict((note, index) for index, note in enumerate(notes_string))
+
+    # get a list of all the values in the dictionary
+    mapped_values = list(note_int_mapping.values())
+
+    # one-hot encode the above dictionary
+    one_hot_encoded = to_categorical(mapped_values)
+    return one_hot_encoded
 
 parse_mid()
 temp, parent_n = all_notes = notes_extraction_mid(parsed_mid)
 perform_end_note_correction(parent_n)
+encoded_input = perform_encoding(parent_n)
+print(encoded_input)
 # plot_quarter_notes(parsed_mid)
 # count_plots(parsed_mid)
 print((files_skipped/(len(parsed_mid) + files_skipped) * 100), "percent of files have been skipped due to corrupt data")
