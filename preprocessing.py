@@ -185,31 +185,56 @@ def perform_end_note_correction(all_notes: List) -> None:
             all_notes.pop(index)
     return
 
-def perform_encoding(all_notes):
-    # get the string version of all the distinct notes and chords and store it in a set
-    notes_string = set()
+def perform_input_encoding(all_notes):
+    notes_string = []
     for single_note_chord in all_notes:
         if isinstance(single_note_chord, note.Note):
             if single_note_chord.nameWithOctave:
-                notes_string.add(single_note_chord.nameWithOctave)
+                notes_string.append(single_note_chord.nameWithOctave)
         if isinstance(single_note_chord, chord.Chord):
-            notes_string.add(','.join(note.nameWithOctave for note in single_note_chord.notes))
+            notes_string.append(','.join(note.nameWithOctave for note in single_note_chord.notes))
+
+    # get the string version of all the distinct notes and chords and store it in a set
+    distinct_notes_chords = set(notes_string)
 
     # create a dictionary of integers corresponding to the distinct notes and chords
-    note_int_mapping = dict((note, index) for index, note in enumerate(notes_string))
-
+    note_int_mapping = dict((note, index) for index, note in enumerate(distinct_notes_chords))
+    return note_int_mapping, notes_string
     # get a list of all the values in the dictionary
-    mapped_values = list(note_int_mapping.values())
+    # mapped_values = list(note_int_mapping.values())
 
-    # one-hot encode the above dictionary
-    one_hot_encoded = to_categorical(mapped_values)
-    return one_hot_encoded
+    # # one-hot encode the above dictionary
+    # one_hot_encoded = to_categorical(mapped_values)
+    # return one_hot_encoded
+
+def select_input_features(all_notes_string, integer_mapped_input):
+    # select an input length
+    input_length = 50
+    input_list = []
+    output_vals = []
+    for index in range(0, len(all_notes_string)-input_length):
+        inp = []
+        for idx in range(index, index + input_length):
+            inp.append(integer_mapped_input[all_notes_string[idx]])
+        out = integer_mapped_input[all_notes_string[index + input_length]]
+
+        input_list.append(inp)
+        output_vals.append(out)
+
+    # normalize the input
+    input_list = np.array(input_list) / np.std(list(integer_mapped_input.values()))
+
+    # one hot encode the output
+    output_vals = to_categorical(output_vals)
+    return input_list, output_vals
 
 parse_mid()
 temp, parent_n = all_notes = notes_extraction_mid(parsed_mid)
 perform_end_note_correction(parent_n)
-encoded_input = perform_encoding(parent_n)
-print(encoded_input)
+integer_mapped_input, all_notes_string = perform_input_encoding(parent_n)
+# print(integer_mapped_input)
+input_list, output_vals = select_input_features(all_notes_string, integer_mapped_input)
+# print(input_list, output_vals)
 # plot_quarter_notes(parsed_mid)
 # count_plots(parsed_mid)
 print((files_skipped/(len(parsed_mid) + files_skipped) * 100), "percent of files have been skipped due to corrupt data")
