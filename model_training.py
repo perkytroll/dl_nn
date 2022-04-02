@@ -1,8 +1,8 @@
 import os
-
 import tensorflow.keras as keras
 import tensorflow.keras.layers as layers
-from tensorflow_core.python.keras.callbacks import ModelCheckpoint
+from tensorflow.python.keras.callbacks import ModelCheckpoint
+import matplotlib.pyplot as mpl
 
 
 class ModelTraining:
@@ -11,15 +11,16 @@ class ModelTraining:
 
     def build_architecture(self):
         model = keras.Sequential()
-        model.add(layers.LSTM(256, input_shape=(self.x_train.shape[1], self.x_train.shape[2]),
-                              return_sequences=True))
+        model.add(layers.LSTM(512, input_shape=(self.x_train.shape[1], self.x_train.shape[2]),
+                              return_sequences=True, recurrent_dropout=0.3))
         model.add(layers.Dropout(0.3))
-        model.add(layers.LSTM(512, return_sequences=True))
+        model.add(layers.LSTM(512, return_sequences=True, recurrent_dropout=0.3))
         model.add(layers.Dropout(0.3))
         model.add(layers.LSTM(512))
-        # model.add(keras.layers.Flatten())
         model.add(layers.Dense(256))
         model.add(layers.Dropout(0.3))
+        # model.add(keras.layers.Flatten())
+        print(self.y_train.shape[1])
         model.add(layers.Dense(units=self.y_train.shape[1]))
         model.add(layers.Activation('softmax'))
         return model
@@ -38,7 +39,7 @@ class ModelTraining:
             save_best_only=True,
             mode='min'
         )
-        history = compiled_model.fit(self.x_train, self.y_train, epochs=1, verbose=1,
+        history = compiled_model.fit(self.x_train, self.y_train, epochs=2, verbose=1, batch_size=64,
                                      validation_split=0.1, callbacks=[checkpoint])
         return history, compiled_model
 
@@ -60,3 +61,13 @@ class ModelTraining:
     def weight_updated_model(self, model_architecture):
         model_architecture.load_weights(self.best_weight_file())
         return model_architecture
+
+    @staticmethod
+    def plot_training_results(history):
+        mpl.plot(history.history['loss'], color='green', linewidth=3)
+        mpl.plot(history.history['val_loss'], color='red', linewidth=3)
+        mpl.xlabel('Epochs')
+        mpl.ylabel('Accuracy')
+        mpl.title('Training Accuracy vs Validation Set Accuracy')
+        mpl.legend(['Training', 'Validation'], loc='upper right')
+        mpl.show()

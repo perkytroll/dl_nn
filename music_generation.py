@@ -1,6 +1,5 @@
 import numpy
 from music21 import note, instrument, chord, stream
-
 from model_training import ModelTraining
 
 
@@ -17,6 +16,7 @@ class MusicGeneration(ModelTraining):
     def generate_new_notes(self, model):
         for note_itr in range(self.notes_to_generate):
             prediction_input = numpy.reshape(self.random_pattern, (1, len(self.random_pattern), 1))
+            prediction_input = prediction_input / float(len(self.integer_mapped_inputs))
             prediction = model.predict(prediction_input)
 
             index = numpy.argmax(prediction)

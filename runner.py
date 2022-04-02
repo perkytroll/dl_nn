@@ -1,11 +1,11 @@
 from data_preprocessor import PreProcessing
-from midi_reader import MIDIReader
+from mid_reader import MIDReader
 from model_training import ModelTraining
+from music_generation import MusicGeneration
 
-# reader = MIDIReader()
+# reader = MIDReader()
 # reader.parse_mid()
 # reader.pickle_parsed_music()
-from music_generation import MusicGeneration
 
 """
 Pre-Processing Data
@@ -28,6 +28,7 @@ model_training = ModelTraining(x_train, x_test, y_train, y_test)
 model_architecture = model_training.build_architecture()
 compiled_model = model_training.compile_model(model_architecture)
 history, trained_model = model_training.model_training(compiled_model)
+model_training.plot_training_results(history)
 
 """
 Generation of Music
@@ -40,4 +41,3 @@ gen_notes.generate_new_notes(weight_updated_model)
 melody_notes = gen_notes.decoder()
 gen_notes.create_output_file(melody_notes)
 print("OK")
-

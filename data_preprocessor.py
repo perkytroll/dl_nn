@@ -10,12 +10,16 @@ from music21 import *
 import numpy
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.utils import to_categorical
-from midi_reader import MIDIReader
+from mid_reader import MIDReader
 
 
-class PreProcessing(MIDIReader):
+class PreProcessing(MIDReader):
 
     def __init__(self):
+        """
+        - Super class constructor call
+        - Get parsed MIDs from the pickled files
+        """
         super().__init__()
         with open(self.pic_name, 'rb') as f:
             self.parsed_midis = pickle.load(f)
@@ -23,14 +27,12 @@ class PreProcessing(MIDIReader):
     def notes_extraction_mid(self):
         """
         - Extracting notes from all the mid-files
+        - If there are any tie notes, strip them and convert them into single notes with duration as the
+        sum of the tied notes
         """
         parent_note = []
         c_note = []
         for p_mid_itr in self.parsed_midis:
-            """
-            - If there are any tie notes, strip them and convert them into single notes with duration as the
-            sum of the tied notes
-            """
             p_mid_itr = p_mid_itr.stripTies()
             """
             - Partition by instrument in the given mid files
@@ -81,7 +83,6 @@ class PreProcessing(MIDIReader):
 
     @staticmethod
     def perform_end_note_correction(all_notes: List) -> None:
-        count = 0
         for index, single_note in enumerate(all_notes):
             if not single_note.volume.velocity or not single_note.duration.quarterLength:
                 all_notes.pop(index)
@@ -97,7 +98,9 @@ class PreProcessing(MIDIReader):
             if isinstance(single_note_chord, chord.Chord):
                 notes_string.append(','.join(note_itr.nameWithOctave for note_itr in single_note_chord.notes))
 
-        # get the string version of all the distinct notes and chords and store it in a set
+        """
+        Get the string version of all the distinct notes and chords and store it in a set
+        """
         distinct_notes_chords = set(notes_string)
 
         # create a dictionary of integers corresponding to the distinct notes and chords
@@ -113,7 +116,7 @@ class PreProcessing(MIDIReader):
     @staticmethod
     def select_input_features(all_notes_string, integer_mapped_input):
         # select an input length
-        input_length = 7
+        input_length = 20
         x = []
         labels = []
         for notes_itr in range(0, len(all_notes_string) - input_length):
@@ -126,7 +129,7 @@ class PreProcessing(MIDIReader):
         x = numpy.reshape(x, (len(x), input_length, 1))
 
         # normalize the input
-        # x = numpy.array(x) / numpy.std(list(integer_mapped_input.values()))
+        x = numpy.array(x) / float(len(integer_mapped_input))
 
         # one hot encode the output
         labels = to_categorical(labels)
