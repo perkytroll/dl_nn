@@ -116,7 +116,7 @@ class PreProcessing(MIDReader):
     @staticmethod
     def select_input_features(all_notes_string, integer_mapped_input):
         # select an input length
-        input_length = 20
+        input_length = 30
         x = []
         labels = []
         for notes_itr in range(0, len(all_notes_string) - input_length):
@@ -137,5 +137,5 @@ class PreProcessing(MIDReader):
 
     @staticmethod
     def data_split(x, labels):
-        x_train, x_test, y_train, y_test = train_test_split(x, labels, test_size=0.15, random_state=42, shuffle=False)
+        x_train, x_test, y_train, y_test = train_test_split(x, labels, test_size=0.25, random_state=42, shuffle=False)
         return x_train, x_test, y_train, y_test

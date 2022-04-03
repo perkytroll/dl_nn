@@ -9,7 +9,7 @@ class MusicGeneration(ModelTraining):
         self.int_to_note = dict((number, note_itr) for number, note_itr in enumerate(distinct_notes_chords))
         self.notes_to_generate = notes_to_generate
         self.integer_mapped_inputs = integer_mapped_inputs
-        self.random_sequence_index = numpy.random.randint(0, len(x_train) - 1)
+        self.random_sequence_index = numpy.random.randint(0, len(x_test) - 1)
         self.random_pattern = x_train[self.random_sequence_index]
         self.prediction_output = []
 
@@ -56,5 +56,3 @@ class MusicGeneration(ModelTraining):
     def create_output_file(melody_notes):
         midi_stream = stream.Stream(melody_notes)
         midi_stream.write('midi', fp='test_output.mid')
-
-
